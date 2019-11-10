@@ -32,15 +32,15 @@ namespace Json
 			tokenObjectEnd,
 			tokenArrayBegin,
 			tokenArrayEnd,
-			tokenNull,
 			tokenString,
+			tokenNumber,
 			tokenTrue,
 			tokenFalse,
-			tokenNumber,
+			tokenNull,
 			tokenComma,
 			tokenColon,
 			tokenComment, // Not Supported Currently.
-			tokenError
+			// tokenError
 		};
 
 		struct Token
@@ -53,21 +53,26 @@ namespace Json
 	private:
 		bool ReadValue(JsonObject& object);
 		bool ReadToken(Token& token);
-		bool ReadObject();
-		bool ReadArray();
+		bool ReadObject(JsonObject& object);
+		bool ReadArray(JsonObject& object);
+		bool ReadString();
+		bool ReadNumber();
+
+		bool DecodeString(const Token& token, JsonObject& object);
+		bool DecodeString(const Token& token, string& decodedText);
+		bool DecodeNumber(const Token& token, JsonObject& object);
 
 		/** Set Error message. */
 		void SetError(const char* message);
 
 		void SkipSpaces();
-
-		// Deprecated.
-		void RemoveWhiteSpaces(string& str);
+		char GetNextChar();
+		bool Match(const char* pattern, int patternLength);
 
 	private:
-		const char* begin;
-		const char* current;
-		const char* end;
+		const char* begin = 0;
+		const char* current = 0;
+		const char* end = 0;
 
 		string errorMessage;
 	};
