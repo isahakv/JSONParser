@@ -22,7 +22,7 @@ namespace Json
 		bool Parse(const char* beginText, const char* endText, JsonObject& root);
 		
 		/** Get Error message. */
-		inline const string& GetError() const { return errorMessage; }
+		string GetErrorMessage() const;
 
 	private:
 		enum TokenType
@@ -33,14 +33,15 @@ namespace Json
 			tokenArrayBegin,
 			tokenArrayEnd,
 			tokenString,
-			tokenNumber,
+			tokenInteger,
+			tokenReal,
 			tokenTrue,
 			tokenFalse,
 			tokenNull,
 			tokenComma,
 			tokenColon,
 			tokenComment, // Not Supported Currently.
-			// tokenError
+			tokenError
 		};
 
 		struct Token
@@ -50,20 +51,29 @@ namespace Json
 			const char* end;
 		};
 
+		struct ErrorInfo
+		{
+			Token token;
+			string message;
+		};
+
 	private:
-		bool ReadValue(JsonObject& object);
 		bool ReadToken(Token& token);
+		bool ReadValue(JsonObject& object);
+		bool ReadValue(Token& token, JsonObject& object);
 		bool ReadObject(JsonObject& object);
 		bool ReadArray(JsonObject& object);
 		bool ReadString();
-		bool ReadNumber();
+		bool ReadNumber(TokenType& outType);
 
 		bool DecodeString(const Token& token, JsonObject& object);
 		bool DecodeString(const Token& token, string& decodedText);
 		bool DecodeNumber(const Token& token, JsonObject& object);
 
 		/** Set Error message. */
-		void SetError(const char* message);
+		bool SetError(const char* message, const Token& token);
+
+		void GetLocationLineAndColumn(const char* location, int& line, int& column) const;
 
 		void SkipSpaces();
 		char GetNextChar();
@@ -74,7 +84,7 @@ namespace Json
 		const char* current = 0;
 		const char* end = 0;
 
-		string errorMessage;
+		ErrorInfo errorInfo;
 	};
 }
 
