@@ -11,7 +11,7 @@ namespace Json
 		return nullStatic;
 	}
 
-	JsonObject::JsonObject(ValueType type)
+	constexpr JsonObject::JsonObject(ValueType type)
 		: type(type)
 	{
 		switch (type)
@@ -58,30 +58,6 @@ namespace Json
 		_value.String = DublicateStringValue(value.data(), value.length());
 	}
 
-	JsonObject::JsonObject(bool value)
-	{
-		type = ValueType::Bool;
-		_value.Bool = value;
-	}
-
-	JsonObject::JsonObject(int value)
-	{
-		type = ValueType::Int;
-		_value.Int = value;
-	}
-
-	JsonObject::JsonObject(unsigned int value)
-	{
-		type = ValueType::UInt;
-		_value.UInt = value;
-	}
-
-	JsonObject::JsonObject(float value)
-	{
-		type = ValueType::Float;
-		_value.Float = value;
-	}
-
 	JsonObject::JsonObject(const JsonObject& other)
 	{
 		type = other.type;
@@ -95,8 +71,8 @@ namespace Json
 		else
 			_value = other._value;
 	}
-	
-	JsonObject::JsonObject(JsonObject&& other) noexcept
+
+	constexpr JsonObject::JsonObject(JsonObject&& other) noexcept
 		: type(other.type), _value(std::move(other._value))
 	{
 		// Reset.
@@ -105,6 +81,7 @@ namespace Json
 
 	JsonObject::~JsonObject()
 	{
+		// Release memory if value type is object/array/string.
 		CleanUp();
 	}
 
@@ -123,7 +100,7 @@ namespace Json
 
 	bool JsonObject::operator==(const JsonObject& other) const
 	{
-		// If types are not matching, then immediatly return false.
+		// If types are not matching, then immediately return false.
 		if (GetType() != other.GetType())
 			return false;
 
@@ -164,7 +141,7 @@ namespace Json
 			return false; // unreachable.
 		}
 	}
-	
+
 	bool JsonObject::operator!=(const JsonObject& other) const
 	{
 		return !(*this == other);
@@ -230,7 +207,7 @@ namespace Json
 
 		return _value.Array->at(index);
 	}
-	
+
 	JsonObject::ObjectIterator JsonObject::ObjectBegin()
 	{
 		if (GetType() != ValueType::Object)
@@ -291,7 +268,7 @@ namespace Json
 	{
 		return Append(JsonObject(object));
 	}
-	
+
 	void JsonObject::Append(JsonObject&& object)
 	{
 		ASSERT_TRUE((GetType() == ValueType::Array || GetType() == ValueType::Null),
@@ -312,7 +289,7 @@ namespace Json
 			return _value.Array->size();
 		return 0;
 	}
-	
+
 	void JsonObject::Clear()
 	{
 		switch (GetType())
@@ -329,7 +306,7 @@ namespace Json
 			break;
 		}
 	}
-	
+
 	void JsonObject::Resize(unsigned int newSize)
 	{
 		ASSERT_TRUE((GetType() == ValueType::Null || GetType() == ValueType::Array),
@@ -368,7 +345,7 @@ namespace Json
 	{
 		return Insert(index, JsonObject(object));
 	}
-	
+
 	bool JsonObject::Insert(int index, JsonObject&& object)
 	{
 		ASSERT_TRUE((GetType() == ValueType::Array || GetType() == ValueType::Null),
@@ -386,13 +363,13 @@ namespace Json
 		}
 		return true;
 	}
-	
+
 	bool JsonObject::RemoveMember(const char* key, JsonObject* removed)
 	{
 		string sKey = key;
 		return RemoveMember(sKey, removed);
 	}
-	
+
 	bool JsonObject::RemoveMember(const string& key, JsonObject* removed)
 	{
 		ASSERT_TRUE((GetType() == ValueType::Null || GetType() == ValueType::Object),
@@ -521,7 +498,7 @@ namespace Json
 	{
 		return GetType() == ValueType::Int || GetType() == ValueType::UInt || GetType() == ValueType::Float;
 	}
-	
+
 	bool JsonObject::IsConvertibleTo(ValueType otherType) const
 	{
 		switch (otherType)

@@ -9,7 +9,7 @@ using std::istream;
 
 namespace Json
 {
-	/** Class for Reading/Parsing JSON data from file/string to 
+	/** Class for Reading/Parsing JSON data from file/string to
 	*	'JsonObject' object. */
 	class JsonReader
 	{
@@ -20,12 +20,12 @@ namespace Json
 		bool Parse(istream& is, JsonObject& root);
 		/** Parse JSON text from given begin to end. */
 		bool Parse(const char* beginText, const char* endText, JsonObject& root);
-		
+
 		/** Get Error message. */
 		string GetErrorMessage() const;
 
 	private:
-		enum TokenType
+		enum class TokenType : uint8_t
 		{
 			tokenEndOfStream,
 			tokenObjectBegin,

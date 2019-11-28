@@ -10,7 +10,7 @@ namespace Json
 			SetError("A valid JsonObject must be either an array or an object value.");
 			return false;
 		}
-		
+
 		this->styled = styled;
 		return WriteValue(json, root);
 	}
@@ -40,7 +40,7 @@ namespace Json
 		case ValueType::String:
 			// If String, then add quotes.
 			json += ToQuoticString(object.AsString());
-			break; 
+			break;
 		case ValueType::Object:
 			succeed = styled ? WriteStyledObject(json, object, deepLevel) : WriteObject(json, object);
 			break;
@@ -53,7 +53,7 @@ namespace Json
 		}
 		return succeed;
 	}
-	
+
 	bool JsonWriter::WriteObject(string& json, const JsonObject& object)
 	{
 		bool succeed = true;
@@ -72,7 +72,7 @@ namespace Json
 		}
 		return succeed;
 	}
-	
+
 	bool JsonWriter::WriteArray(string& json, const JsonObject& object)
 	{
 		bool succeed = true;
@@ -96,8 +96,8 @@ namespace Json
 		int size = names.size();
 
 		if (deepLevel > 0 && isMultiLine)
-			json += '\n' + GetTabs(deepLevel);
-		json += isMultiLine ? "{\n" + GetTabs(deepLevel + 1) : "{ ";
+			json += '\n' + GetIndent(deepLevel);
+		json += isMultiLine ? "{\n" + GetIndent(deepLevel + 1) : "{ ";
 		for (int i = 0; i < size; i++)
 		{
 			string& name = names[i];
@@ -108,9 +108,9 @@ namespace Json
 
 			// If last child.
 			if (i == size - 1)
-				json += isMultiLine ? "\n" + GetTabs(deepLevel) + "}" : " }";
+				json += isMultiLine ? "\n" + GetIndent(deepLevel) + "}" : " }";
 			else
-				json += isMultiLine ? ",\n" + GetTabs(deepLevel + 1) : ", ";
+				json += isMultiLine ? ",\n" + GetIndent(deepLevel + 1) : ", ";
 		}
 		return succeed;
 	}
@@ -121,8 +121,8 @@ namespace Json
 		int size = object.Size();
 
 		if (deepLevel > 0 && isMultiLine)
-			json += '\n' + GetTabs(deepLevel);
-		json += isMultiLine ? "[\n" + GetTabs(deepLevel + 1) : "[ ";
+			json += '\n' + GetIndent(deepLevel);
+		json += isMultiLine ? "[\n" + GetIndent(deepLevel + 1) : "[ ";
 		for (int i = 0; i < size; i++)
 		{
 			if (!(succeed = WriteValue(json, object[i], deepLevel + 1)))
@@ -130,9 +130,9 @@ namespace Json
 
 			// If last child.
 			if (i == size - 1)
-				json += isMultiLine ? "\n" + GetTabs(deepLevel) + "]" : " ]";
+				json += isMultiLine ? "\n" + GetIndent(deepLevel) + "]" : " ]";
 			else
-				json += isMultiLine ? ",\n" + GetTabs(deepLevel + 1) : ", ";
+				json += isMultiLine ? ",\n" + GetIndent(deepLevel + 1) : ", ";
 		}
 
 		return succeed;
@@ -150,7 +150,7 @@ namespace Json
 		return std::move(str);
 	}
 
-	string JsonWriter::GetTabs(int deepLevel)
+	string JsonWriter::GetIndent(int deepLevel)
 	{
 		string tabs;
 		tabs.reserve(deepLevel);

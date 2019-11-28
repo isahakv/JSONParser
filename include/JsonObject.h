@@ -16,8 +16,8 @@ class JsonObject;
 
 namespace Json
 {
-	// All posible Types of Json Object.
-	enum class ValueType
+	// All possible Types of Json Object.
+	enum class ValueType : uint8_t
 	{
 		Null,
 		String,
@@ -36,16 +36,20 @@ namespace Json
 		static const JsonObject& NullSingleton();
 
 		/** Create a Default JsonObject of the given type. */
-		JsonObject(ValueType type = ValueType::Null);
+		constexpr JsonObject(ValueType type = ValueType::Null);
 		/** 'value' mast be null terminated. */
 		JsonObject(const char* value);
 		JsonObject(const string& value);
-		JsonObject(bool value);
-		JsonObject(int value);
-		JsonObject(unsigned int value);
-		JsonObject(float value);
+		constexpr JsonObject(bool value)
+			: type(ValueType::Bool), _value(value) {}
+		constexpr JsonObject(int value)
+			: type(ValueType::Int), _value(value) {}
+		constexpr JsonObject(unsigned int value)
+			: type(ValueType::UInt), _value(value) {}
+		constexpr JsonObject(float value)
+			: type(ValueType::Float), _value(value) {}
 		JsonObject(const JsonObject& other);
-		JsonObject(JsonObject&& other) noexcept;
+		constexpr JsonObject(JsonObject&& other) noexcept;
 		~JsonObject();
 
 #pragma region UnaryOperators
@@ -75,11 +79,6 @@ namespace Json
 		bool operator==(const JsonObject& other) const;
 		/** Not Equal operator. */
 		bool operator!=(const JsonObject& other) const;
-
-		/** Write to stream. */
-		friend ostream& operator<<(ostream& stream, const JsonObject& obj);
-		/** Read from stream. */
-		friend istream& operator>>(istream& stream, const JsonObject& obj);
 #pragma endregion
 
 #pragma region Iteration
@@ -185,6 +184,12 @@ namespace Json
 
 		union ValueHolder
 		{
+			constexpr ValueHolder() : Map(nullptr) {}
+			constexpr ValueHolder(bool Bool) : Bool(Bool) {}
+			constexpr ValueHolder(int Int) : Int(Int) {}
+			constexpr ValueHolder(unsigned int UInt) : UInt(UInt) {}
+			constexpr ValueHolder(float Float) : Float(Float) {}
+
 			char* String;
 			bool Bool;
 			int Int;

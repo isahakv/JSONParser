@@ -6,7 +6,7 @@
 
 namespace Json
 {
-	/** Class for Writing JSON data to file/string from 
+	/** Class for Writing JSON data to file/string from
 	*	'JsonObject' object. */
 	class JsonWriter
 	{
@@ -15,7 +15,7 @@ namespace Json
 		bool Write(string& json, const JsonObject& root, bool styled = true);
 		/** Write JsonObject to output stream. */
 		bool Write(ostream& os, const JsonObject& root, bool styled = true);
-		
+
 		/** Get Error message. */
 		inline const string& GetError() const { return errorMessage; }
 
@@ -31,7 +31,7 @@ namespace Json
 		string&& ToQuoticString(string&& str);
 
 		/** Returns string of tabs depending on deep level. */
-		string GetTabs(int deepLevel);
+		string GetIndent(int deepLevel);
 
 		/** 'value' must be of type object/array.
 		* Returns true, if 'value' has child of type object/array,

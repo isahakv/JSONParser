@@ -7,7 +7,7 @@ namespace Json
 	bool JsonReader::Parse(const string& json, JsonObject& root)
 	{
 		const char* begin = json.c_str();
-		const char*  end = begin + json.length();
+		const char* end = begin + json.length();
 		return Parse(begin, end, root);
 	}
 
@@ -27,7 +27,7 @@ namespace Json
 		if (*current != '{' && *current != '[')
 		{
 			Token token;
-			token.type = tokenError;
+			token.type = TokenType::tokenError;
 			token.start = begin;
 			token.end = end;
 			return SetError("A valid JSON document must be either an array or an object value.", token);
@@ -64,34 +64,34 @@ namespace Json
 		bool succeed = true;
 		switch (token.type)
 		{
-		case tokenObjectBegin:
+		case TokenType::tokenObjectBegin:
 			succeed = ReadObject(object);
 			break;
-		case tokenArrayBegin:
+		case TokenType::tokenArrayBegin:
 			succeed = ReadArray(object);
 			break;
-		case tokenString:
+		case TokenType::tokenString:
 			succeed = DecodeString(token, object);
 			break;
-		case tokenInteger:
-		case tokenReal:
+		case TokenType::tokenInteger:
+		case TokenType::tokenReal:
 			succeed = DecodeNumber(token, object);
 			break;
-		case tokenTrue:
+		case TokenType::tokenTrue:
 			object = true;
 			break;
-		case tokenFalse:
+		case TokenType::tokenFalse:
 			object = false;
 			break;
-		case tokenNull:
+		case TokenType::tokenNull:
 			object = JsonObject();
 			break;
 			// Unexpected Tokens.
-		case tokenComma:
-		case tokenColon:
-		case tokenObjectEnd:
-		case tokenArrayEnd:
-		case tokenError:
+		case TokenType::tokenComma:
+		case TokenType::tokenColon:
+		case TokenType::tokenObjectEnd:
+		case TokenType::tokenArrayEnd:
+		case TokenType::tokenError:
 		default:
 			return SetError("Syntax error: Unexpected token.", token);
 		}
@@ -109,23 +109,23 @@ namespace Json
 		switch (c)
 		{
 		case '{':
-			token.type = tokenObjectBegin;
+			token.type = TokenType::tokenObjectBegin;
 			break;
 		case '}':
-			token.type = tokenObjectEnd;
+			token.type = TokenType::tokenObjectEnd;
 			break;
 		case '[':
-			token.type = tokenArrayBegin;
+			token.type = TokenType::tokenArrayBegin;
 			break;
 		case ']':
-			token.type = tokenArrayEnd;
+			token.type = TokenType::tokenArrayEnd;
 			break;
 		case '"':
-			token.type = tokenString;
+			token.type = TokenType::tokenString;
 			succeed = ReadString();
 			break;
 		case '/': // Not Supported Currently.
-			token.type = tokenComment;
+			token.type = TokenType::tokenComment;
 			break;
 		case '0':
 		case '1':
@@ -138,28 +138,28 @@ namespace Json
 		case '8':
 		case '9':
 		case '-':
-				succeed = ReadNumber(token.type);
-				break;
+			succeed = ReadNumber(token.type);
+			break;
 		case 't':
-			token.type = tokenTrue;
+			token.type = TokenType::tokenTrue;
 			succeed = Match("rue", 3);
 			break;
 		case 'f':
-			token.type = tokenFalse;
+			token.type = TokenType::tokenFalse;
 			succeed = Match("alse", 4);
 			break;
 		case 'n':
-			token.type = tokenNull;
+			token.type = TokenType::tokenNull;
 			succeed = Match("ull", 3);
 			break;
 		case ',':
-			token.type = tokenComma;
+			token.type = TokenType::tokenComma;
 			break;
 		case ':':
-			token.type = tokenColon;
+			token.type = TokenType::tokenColon;
 			break;
 		case '\0':
-			token.type = tokenEndOfStream;
+			token.type = TokenType::tokenEndOfStream;
 			break;
 		default: // If unknown/unspecified symbol.
 			succeed = false;
@@ -167,8 +167,8 @@ namespace Json
 		}
 		// If not succeed, then token type is error.
 		if (!succeed)
-			token.type = tokenError;
-		
+			token.type = TokenType::tokenError;
+
 		token.end = current;
 		return succeed;
 	}
@@ -180,20 +180,20 @@ namespace Json
 		while (ReadToken(nameToken))
 		{
 			// If empty object.
-			if (nameToken.type == tokenObjectEnd)
+			if (nameToken.type == TokenType::tokenObjectEnd)
 				return true;
 			// Clear name.
 			name.clear();
 			// Check and Decode name.
-			if (nameToken.type != tokenString || !DecodeString(nameToken, name))
+			if (nameToken.type != TokenType::tokenString || !DecodeString(nameToken, name))
 			{
-				if (nameToken.type != tokenString)
+				if (nameToken.type != TokenType::tokenString)
 					return SetError("Expected object member name.", nameToken);
 				else // Error already set.
 					return false;
 			}
 			// Read and Check colon.
-			if (!ReadToken(colon) || colon.type != tokenColon)
+			if (!ReadToken(colon) || colon.type != TokenType::tokenColon)
 				return SetError("Missing ':' after object member name.", colon);
 
 			// Read and Check value.
@@ -203,11 +203,11 @@ namespace Json
 
 			object[name] = std::move(value);
 			// Check for comma.
-			if (!ReadToken(comma) || (comma.type != tokenComma && comma.type != tokenObjectEnd))
+			if (!ReadToken(comma) || (comma.type != TokenType::tokenComma && comma.type != TokenType::tokenObjectEnd))
 				return SetError("Missing ',' or '}' after object member value.", colon);
 
 			// If object ended.
-			if (comma.type == tokenObjectEnd)
+			if (comma.type == TokenType::tokenObjectEnd)
 				return true;
 		}
 
@@ -223,7 +223,7 @@ namespace Json
 				return false; // Error already set.
 
 			// If empty array.
-			if (valueToken.type == tokenArrayEnd)
+			if (valueToken.type == TokenType::tokenArrayEnd)
 				return true;
 
 			// Read and Check value.
@@ -233,11 +233,11 @@ namespace Json
 
 			object.Append(std::move(value));
 			// Check for comma.
-			if (!ReadToken(comma) || (comma.type != tokenComma && comma.type != tokenArrayEnd))
+			if (!ReadToken(comma) || (comma.type != TokenType::tokenComma && comma.type != TokenType::tokenArrayEnd))
 				return SetError("Missing ',' or ']' after array value.", comma);
 
 			// If array ended.
-			if (comma.type == tokenArrayEnd)
+			if (comma.type == TokenType::tokenArrayEnd)
 				return true;
 		}
 	}
@@ -257,7 +257,7 @@ namespace Json
 	bool JsonReader::ReadNumber(TokenType& outType)
 	{
 		char c = *current;
-		outType = tokenInteger;
+		outType = TokenType::tokenInteger;
 		// Integral part.
 		while (c >= '0' && c <= '9')
 		{
@@ -271,7 +271,7 @@ namespace Json
 		{
 			++current;
 			c = *current;
-			outType = tokenReal;
+			outType = TokenType::tokenReal;
 			while (c >= '0' && c <= '9')
 			{
 				if (current == end)
@@ -289,7 +289,7 @@ namespace Json
 			{
 				++current;
 				c = *current;
-				outType = tokenReal;
+				outType = TokenType::tokenReal;
 				while (c >= '0' && c <= '9')
 				{
 					if (current == end)
@@ -337,19 +337,19 @@ namespace Json
 	{
 		string buffer(token.start, token.end);
 		std::istringstream is(buffer);
-		if (token.type == tokenInteger)
+		if (token.type == TokenType::tokenInteger)
 		{
 			bool isNegative = is.peek() == '-';
-			int value = 0;
+			int value;
 			if (is >> value)
 			{
-				object = value;
+				object = isNegative ? value : static_cast<unsigned int>(value);
 				return true;
 			}
 		}
-		else if(token.type == tokenReal)
+		else if (token.type == TokenType::tokenReal)
 		{
-			float value = 0.0;
+			float value;
 			if (is >> value)
 			{
 				object = value;
@@ -404,7 +404,7 @@ namespace Json
 			return '\0';
 		return *current++;
 	}
-	
+
 	bool JsonReader::Match(const char* pattern, int patternLength)
 	{
 		if (patternLength > end - current)
